@@ -8,20 +8,68 @@ Type: Informational
 Content-Type: text/x-rst
 Created: 28-JUN-2020
 Post-History: 10-JUN-2020
-Resolution: https://github.com/pypa/packaging-problems/issues/367
+Discussions-To: 
 
 
 Abstract
 ========
 
+This is a PEP to describe the current Warehouse JSON API.
 
 Motivation
 ==========
+
+We aim to lock in the existing standard as a guarantee for consumers (client applications like pip, pipenv, and more), and to help other indexes (such as devpi and pypiserver and Artifactory) to implement the standard and be assured of interoperability.
+
+
+Definitions
+===========
+
+
+
+Use cases supported by the API
+==============================
+
+
+Non-goals
+=========
+
+Use cases not supported by the API.
 
 
 Specification
 =============
 
+Discovery
+---------
+
+Per Paul Moore: "a clear way for clients to query servers as to whether they support this API. Just trying a query and checking the response runs the risk of people exposing a "similar, but not the same" API and clients having no way of knowing."
+
+
+Versioning
+----------
+
+Dealing with errors
+-------------------
+important error codes or the lack thereof, and how the API deals with malformed requests or requests for nonexistent projects or releases
+
+Guaranteed response fields
+--------------------------
+
+what fields are guaranteed to be returned
+
+Capitalization, case-sensitivity, and normalization
+---------------------------------------------------
+
+
+References
+==========
+
+
+Acknowledgments
+===============
+
+ https://github.com/pypa/packaging-problems/issues/367
 
 Copyright
 =========
