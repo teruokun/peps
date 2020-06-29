@@ -1,6 +1,6 @@
 PEP: 9999
 Title: JSON Metadata API
-Author: Cooper Lees <me@cooperlees.com>
+Author: Cooper Lees <me@cooperlees.com>, Sumana Harihareswara <sh@changeset.nyc>
 Sponsor: TBA
 BDFL-Delegate: Donald Stufft <donald at stufft.io>
 Status: Draft
