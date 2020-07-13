@@ -1,75 +1,212 @@
 PEP: 9999
 Title: JSON Metadata API
 Author: Cooper Lees <me@cooperlees.com>, Sumana Harihareswara <sh@changeset.nyc>
-Sponsor: TBA
+Sponsor: Łukasz Langa <lukasz@python.org>
 BDFL-Delegate: Donald Stufft <donald at stufft.io>
 Status: Draft
 Type: Informational
 Content-Type: text/x-rst
 Created: 28-JUN-2020
 Post-History: 10-JUN-2020
-Discussions-To: 
+Discussions-To:
 
 
 Abstract
 ========
 
-This is a PEP to describe the current Warehouse JSON API.
+This PEP describes the Python Packaging Index (Warehouse) JSON API.
+This API is accessed via HTTP GET requests.
 
 Motivation
 ==========
 
-We aim to lock in the existing standard as a guarantee for consumers (client applications like pip, pipenv, and more), and to help other indexes (such as devpi and pypiserver and Artifactory) to implement the standard and be assured of interoperability.
-
+This PEP aims to lock in the existing standard as a guarantee for consumers
+(e.g. client applications like pip, pipenv and more). It als aims to help other
+indexes (such as devpi, pypiserver and Artifactory) to implement the standard and be
+assured of interoperability.
 
 Definitions
 ===========
 
+* **HTTP**: Hypertext Transfer Protocol
+* **JSON API**: Canonical / historical name given to this API we are describing in this PEP
+* **Metadata**: a set of data that describes and gives information about other data.
+  In this case, *data* about an active Python Package on the Python Package Index.
+* **Python Package**: Distributable archive of Python loadable source or binaries
 
 
 Use cases supported by the API
 ==============================
 
+The *JSON API* is a read only API to retrieve metadata of a Python Package.
 
 Non-goals
 =========
 
-Use cases not supported by the API.
+The follow aspects will not be considered for the JSON API:
 
+* Writeable endpoints: The JSON API is to remain read only
 
 Specification
 =============
 
+The JSON API is a HTTP GET based API. HTTP responses must be sent with the following content type:
+
+::
+
+   content-type: application/json
+
+It is guaranteed to always have **only** string top level key values.
+
 Discovery
 ---------
 
-Per Paul Moore: "a clear way for clients to query servers as to whether they support this API. Just trying a query and checking the response runs the risk of people exposing a "similar, but not the same" API and clients having no way of knowing."
+The JSON API has a discovery endpoint at **/json**.
+This endpoint will reply with the current API version.
 
+Each API shall also have a GET discovery call at **/json/discovery/$endpoint_name**
 
 Versioning
 ----------
 
-Dealing with errors
--------------------
-important error codes or the lack thereof, and how the API deals with malformed requests or requests for nonexistent projects or releases
+The JSON API will use Semantic Versioning [3]_. This PEP currenly covers version **1.0.0**
 
 Guaranteed response fields
 --------------------------
 
-what fields are guaranteed to be returned
+Using the JSON Schema draft standard [1]_ here are the expected returned metadata fields from the
+JSON API. The complete JSON has been broken down by top level key values.
+
+**JSON Top Level Keys**
+
+::
+
+  {
+    "info": {},
+    "last_serial": 0,
+    "releases": {},
+    "urls": {}
+  }
+
+**info**
+
+::
+
+  {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://pypi.org/json_api:info.schema.json",
+    "title": "info",
+    "description": "Generic information pulled from Python Package configuration",
+    "type": "object",
+    "properties": {
+      "author": {
+         "description": "The name of the company of individual who created the package",
+         "type": "string"
+      },
+      "author_email": {
+         "description": "The company or individual's email address",
+         "type": "string"
+      }
+    },
+    "required": [ "author", "author_email" ]
+  }
+
+**last_serial**
+
+::
+
+  {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://pypi.org/json_api:last_serial.schema.json",
+    "title": "last_serial",
+    "description": "Internal PyPI serial indicating last modification",
+    "type": "int"
+  }
+
+**releases**
+
+::
+
+  {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://pypi.org/json_api:releases.schema.json",
+    "title": "releases",
+    "description": "Per release (each version)",
+    "type": "object",
+    "properties": {
+      "common_test": {
+         "description": "The name of the company of individual who created the package",
+         "type": "string"
+      },
+      "digests": {
+         "description": "The company or individual's email address",
+         "type": "object"
+         "properties": {
+            "md5": {
+               "description": "The MD5 checksum of the release file",
+               "type": "string"
+            },
+            "sha256": {
+               "description": "The SHA256 checksum of the release file",
+               "type": "string"
+            }
+         }
+      }
+    },
+    "required": [ "author", "author_email" ]
+  }
+
+**urls**
+
+Identical to releases, but for the latest release on the Python package index.
+
+
+Deprecated response fields
+--------------------------
+
+The Python Packaging Index returns the following keys today, but are not guaranteed
+to be accurate and are deprecated. Please feel free to leave these keys out of your
+implementation.
+
+**"info":**
+
+* "downloads": This key and all children have been deprecated in favor of having clients
+  use Google BigQuery data.
+
+**"releases" / "urls":**
+
+* "downloads": This key and all children have been deprecated in favor of having clients
+  use Google BigQuery data.
+
+
+Dealing with errors
+-------------------
+
+Client errors today are all handled via HTTP response codes. The following is returned:
+
+* 404: When a projects does not exist
+* 500: When an internal code logic or database error occurs
+
+# TODO: Find out if there is anything else done? @cooperlees only knows this
 
 Capitalization, case-sensitivity, and normalization
 ---------------------------------------------------
 
+The JSON API normalizes package names as per PEP 503 [2]_.
 
 References
 ==========
+
+.. [1] JSON Schema https://json-schema.org/
+.. [2] PEP 503 https://www.python.org/dev/peps/pep-0503/
+.. [3] Semantic Versioning https://semver.org/
 
 
 Acknowledgments
 ===============
 
- https://github.com/pypa/packaging-problems/issues/367
+* GitHub issue requesting PEP - https://github.com/pypa/packaging-problems/issues/367
+* devpi issue requesting JSON API Support - https://github.com/devpi/devpi/issues/801
 
 Copyright
 =========
