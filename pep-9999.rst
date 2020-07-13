@@ -14,14 +14,14 @@ Discussions-To:
 Abstract
 ========
 
-This PEP describes the Python Packaging Index (Warehouse) JSON API.
+This PEP describes the Python Package Index (Warehouse) JSON API.
 This API is accessed via HTTP GET requests.
 
 Motivation
 ==========
 
 This PEP aims to lock in the existing standard as a guarantee for consumers
-(e.g. client applications like pip, pipenv and more). It als aims to help other
+(e.g., client applications like pip, pipenv and more). It also aims to help other
 indexes (such as devpi, pypiserver and Artifactory) to implement the standard and be
 assured of interoperability.
 
@@ -38,14 +38,14 @@ Definitions
 Use cases supported by the API
 ==============================
 
-The *JSON API* is a read only API to retrieve metadata of a Python Package.
+The *JSON API* is a read-only API to retrieve metadata of a Python Package.
 
 Non-goals
 =========
 
 The follow aspects will not be considered for the JSON API:
 
-* Writeable endpoints: The JSON API is to remain read only
+* Writeable endpoints: The JSON API is to remain read-only.
 
 Specification
 =============
@@ -56,7 +56,7 @@ The JSON API is a HTTP GET based API. HTTP responses must be sent with the follo
 
    content-type: application/json
 
-It is guaranteed to always have **only** string top level key values.
+It is guaranteed to always have **only** strings as top-level key values.
 
 Discovery
 ---------
@@ -75,7 +75,7 @@ Guaranteed response fields
 --------------------------
 
 Using the JSON Schema draft standard [1]_ here are the expected returned metadata fields from the
-JSON API. The complete JSON has been broken down by top level key values.
+JSON API. The complete JSON has been broken down by top-level key values.
 
 **JSON Top Level Keys**
 
@@ -158,14 +158,14 @@ JSON API. The complete JSON has been broken down by top level key values.
 
 **urls**
 
-Identical to releases, but for the latest release on the Python package index.
+Identical to releases, but for the latest release on the Python Package Index.
 
 
 Deprecated response fields
 --------------------------
 
-The Python Packaging Index returns the following keys today, but are not guaranteed
-to be accurate and are deprecated. Please feel free to leave these keys out of your
+The Python Package Index returns the following keys today, but they are not guaranteed
+to be accurate, and are deprecated. Please feel free to leave these keys out of your
 implementation.
 
 **"info":**
@@ -187,7 +187,7 @@ Client errors today are all handled via HTTP response codes. The following is re
 * 404: When a projects does not exist
 * 500: When an internal code logic or database error occurs
 
-# TODO: Find out if there is anything else done? @cooperlees only knows this
+# TODO: Find out if there is anything else done? @cooperlees only knows of the errors above
 
 Capitalization, case-sensitivity, and normalization
 ---------------------------------------------------
