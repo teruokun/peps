@@ -33,6 +33,7 @@ Definitions
 * **Metadata**: a set of data that describes and gives information about other data.
   In this case, *data* about an active Python Package on the Python Package Index.
 * **Python Package**: Distributable archive of Python loadable source or binaries
+* **TUF**: The Update Framework, as described in PEP 458
 
 
 Use cases supported by the API
@@ -43,9 +44,16 @@ The *JSON API* is a read-only API to retrieve metadata of a Python Package.
 Non-goals
 =========
 
-The follow aspects will not be considered for the JSON API:
+The following aspects will not be considered for the JSON API:
 
 * Writeable endpoints: The JSON API is to remain read-only.
+
+The following aspects will not be considered for this version of the JSON API:
+
+* TUF integration and dependency resolution: This version of the JSON API is not
+  protected by TUF, and so should not be used for dependency resolution. PyPI
+  maintainers intend on providing a future download API that is TUF-protected
+  within a few years.
 
 Specification
 =============
