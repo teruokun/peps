@@ -192,10 +192,11 @@ Dealing with errors
 
 Client errors today are all handled via HTTP response codes. The following is returned:
 
+* 301: When a JSON URL has a trailing / the server should redirect to
+  a URL removing the tailing / removed
 * 404: When a projects does not exist
 * 500: When an internal code logic or database error occurs
 
-# TODO: Find out if there is anything else done? @cooperlees only knows of the errors above
 
 Capitalization, case-sensitivity, and normalization
 ---------------------------------------------------
