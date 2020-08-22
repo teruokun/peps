@@ -251,6 +251,17 @@ JSON API. The complete JSON has been broken down by top-level key values.
 
 **releases**
 
+Each release falls under a sequence of release files under the release version key string.
+For example:
+
+::
+
+  {
+    "X.X.X": [{}, {}]
+  }
+
+**release file**
+
 ::
 
   {
@@ -260,8 +271,8 @@ JSON API. The complete JSON has been broken down by top-level key values.
     "description": "Per release (each version)",
     "type": "object",
     "properties": {
-      "common_test": {
-         "description": "The name of the company of individual who created the package",
+      "common_text": {
+         "description": "Misc package metadata",
          "type": "string"
       },
       "digests": {
@@ -277,9 +288,72 @@ JSON API. The complete JSON has been broken down by top-level key values.
                "type": "string"
             }
          }
+      },
+      "downloads": {
+         "description": "[deprecated] Count of release downloads",
+         "type": "int"
+      },
+      "filename": {
+         "description": "Release full filename (including extension)",
+         "type": "string"
+      },
+      "has_sig": {
+         "description": "@cooperlees is not sure - TUF?",
+         "type": "string"
+      },
+      "md5_digest": {
+         "description": "[deprecated] Legacy MD5 digest of release file",
+         "type": "string"
+      },
+      "packagetype": {
+         "description": "Release file type - e.g. sdist / wheel",
+         "type": "string"
+      },
+      "python_version": {
+         "description": "Python runtime version release file is for or source",
+         "type": "string"
+      },
+      "requires_python": {
+         "description": "Release's python required",
+         "type": "string"
+      },
+      "size": {
+         "description": "File size in bytes",
+         "type": "int"
+      },
+      "upload_time": {
+         "description": "Timestamp of when release file was uploaded",
+         "type": "string"
+      },
+      "upload_time_iso_8601": {
+         "description": "ISO 8601 timestamp of when release file was uploaded",
+         "type": "string"
+      },
+      "url": {
+         "description": "URL to use to download release file",
+         "type": "string"
+      },
+      "yanked": {
+         "description": "Is release file PEP 592 yanked",
+         "type": "boolean"
+      },
+      "yanked_reason": {
+         "description": "PEP 592 reason for yanking release file",
+         "type": "string"
       }
     },
-    "required": [ "author", "author_email" ]
+    "required": [
+      "digests",
+      "filename",
+      "pacakgetype",
+      "python_version",
+      "size",
+      "upload_time",
+      "upload_time_iso_8601",
+      "url",
+      "yanked",
+      "yanked_reason",
+    ]
   }
 
 **urls**
