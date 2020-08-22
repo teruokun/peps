@@ -77,7 +77,22 @@ Each API shall also have a GET discovery call at **/json/discovery/$endpoint_nam
 Versioning
 ----------
 
-The JSON API will use Semantic Versioning [3]_. This PEP currenly covers version **1.0.0**
+The JSON API will use Semantic Versioning [3]_. This PEP currently covers version **1.0.0**
+
+API URLs
+--------
+
+* /json: Shows API version
+* /json/discover/$call_name: Description of the API call
+* /json/project/$project_name: Return main JSON object described blow
+* /json/p/$project_name: Alias of the above /json/project
+
+Legacy URLs
+-----------
+
+This is the legacy URL on the main PyPI website.
+
+* /pypi/$project_name/json
 
 Guaranteed response fields
 --------------------------
@@ -114,9 +129,112 @@ JSON API. The complete JSON has been broken down by top-level key values.
       "author_email": {
          "description": "The company or individual's email address",
          "type": "string"
-      }
+      },
+      "bugtrack_url": {
+         "description": "URL to find issues and bugs for projects",
+         "type": "string"
+      },
+      "classifiers": {
+         "description": "Trove Classifier. List of classifiers: https://pypi.org/classifiers/",
+         "type": "sequence"
+      },
+      "description": {
+         "description": "Projects description displayed on the project PyPI page",
+         "type": "string"
+      },
+      "description_content_type": {
+         "description": "Description Content Type: https://packaging.python.org/guides/making-a-pypi-friendly-readme/",
+         "type": "string"
+      },
+      "docs_url": {
+         "description": "URL to projects documentation",
+         "type": "string"
+      },
+      "download_url": {
+         "description": "[deprecated] url to projects download page",
+         "type": "string"
+      },
+      "downloads": {
+         "description": "[deprecated] Download counts",
+         "type": "object"
+      },
+      "home_page": {
+         "description": "URL to project home page",
+         "type": "string"
+      },
+      "keywords": {
+         "description": "Keywords to use for project searching",
+         "type": "string"
+      },
+      "license": {
+         "description": "Projects Open Source License",
+         "type": "string"
+      },
+      "maintainer": {
+         "description": "Project Maintainer Name",
+         "type": "string"
+      },
+      "maintainer_email": {
+         "description": "Project Maintainer Email Address",
+         "type": "string"
+      },
+      "name": {
+         "description": "Projects Raw (non normailzed name)",
+         "type": "string"
+      },
+      "package_url": {
+         "description": "URL to the PyPI project page",
+         "type": "string"
+      },
+      "platform": {
+         "description": "[deprecated] @cooperlees does not know",
+         "type": "string"
+      },
+      "project_url": {
+         "description": "URL to the PyPI project page",
+         "type": "string"
+      },
+      "project_urls": {
+         "description": "Change Log, Homepage and Source Code URLs",
+         "type": "object"
+      },
+      "release_url": {
+         "description": "URL Latest version version project page",
+         "type": "string"
+      },
+      "requires_dist": {
+         "description": "Metadata calculated project dependencies",
+         "type": "string"
+      },
+      "requires_python": {
+         "description": "Python runtime version required for project: https://packaging.python.org/guides/dropping-older-python-versions/",
+         "type": "string"
+      },
+      "summary": {
+         "description": "Brief description of the project",
+         "type": "string"
+      },
+      "version": {
+         "description": "Latest version of the project available",
+         "type": "string"
+      },
+      "yanked": {
+         "description": "If the latest version has been yanked: PEP 592",
+         "type": "boolean"
+      },
+      "yanked_reason": {
+         "description": "Reason for applying PEP 592 version yank",
+         "type": "string"
+      },
     },
-    "required": [ "author", "author_email" ]
+    "required": [
+      "author",
+      "author_email",
+      "license",
+      "name",
+      "project_url",
+      "version",
+    ]
   }
 
 **last_serial**
