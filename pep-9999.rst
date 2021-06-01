@@ -14,381 +14,214 @@ Discussions-To:
 Abstract
 ========
 
-The Python Package Index (Warehouse) provides a way of querying projects metadata
-known as JSON API. This PEP formalizes the existing API as version 1.0.
+The Python Package Index (Warehouse) provides a way of querying projects
+metadata known as JSON API. This PEP formalizes the existing API as version 1.0.
 
 Motivation
 ==========
 
+The JSON API was never standardized, and 3rd-party index implementations had to
+reverse engineer the format to implement it.
+
 This PEP aims to lock in the existing standard as a guarantee for consumers
-(e.g., client applications like pip, pipenv and more). It also aims to help other
-indexes (such as devpi, pypiserver and Artifactory) to implement the standard and be
-assured of interoperability. Standartization additionally allows for a structured
-evolution of the API.
+(e.g., client applications like pip, pipenv and more). It also aims to help
+other indexes (such as devpi, pypiserver and Artifactory) to implement the
+standard and be assured of interoperability. Standartization additionally allows
+for a structured evolution of the API going forward.
 
 Definitions
 ===========
 
-* **JSON API**: Canonical / historical name given to this API we are describing in this PEP.
-* **XMLRPC API**: Another legacy API that this PEP does not cover.
-* **Python Package**: Distributable archive of Python loadable source or binaries.
-* **Python Project**: In the context of JSON API a project is a pip-installable Python package typically containing mutliple versions with
-  potentially multiple installable Python Packages. 
+* **JSON API**: Canonical / historical name given to this API described in this PEP
+* **Release file**: Downloadable and installable distribution with Python source or binaries
+* **Release**: In the context of JSON API, a Project Release is a set of Release Files associated with a specific version
+* **Project**: A Python Project is a pip-installable
+  Python package typically containing mutliple versions with
+  potentially multiple installable artifacts
 
 Goals
-==============================
+=====
 
-* Keep the JSON API read-only and highly cacheable.
+* Declare legacy JSON API endpoints deprecated
 * Formalize the structure of the existing JSON API without changing the output format:
-  For all fields in the API specify whether they are required, optional,
-  deprecated and detail their intended meaning.
-* Declare legacy JSON API endpoint deprecated.
+  For all properties in the API specify whether they are required, optional,
+  deprecated and detail their intended meaning
 * Introduce new API endpoint that
+
   * Allows existing users to migrate with minimal effort
   * Is designed to evolve
-  * Is designed to be friendly to index servers with multiple indexes.
+  * Is designed to be friendly to index servers with multiple indexes
 
 Non-goals
 =========
 
-The following is not part of this PEP:
+The following is not part of this proposal, but is likely to warrant subsequent
+PEPs:
 
-* Adding fields that aren't already returned by the legacy JSON API endpoints.
-* Removing fields that are already returned by the legacy JSON API endpoints.
-* Adding discovery endpoints.
-* Adding pagination or authentication.
-* Adding writeable endpoints: The JSON API is to remain read-only.
-* TUF (PEP 458) integration and dependency resolution: This version of the JSON API is not
-  protected by TUF, and so should not be used for dependency resolution. PyPI
-  maintainers intend on providing a future download API that is TUF-protected
-  within a few years.
-* XMLRPC API deprecation: The PEP lays the foundation for the future deprecation of the
-  XMLRPC API, but it doesn't directly addresses it.
+* Adding properties that aren't already returned by the legacy JSON API endpoints
+* Removing properties that are already returned by the legacy JSON API endpoints
+* Adding discovery endpoints
+* Adding pagination capabilities
+* Adding authentication
+* Adding writeable endpoints
+* Supporting TUF (PEP 458): This version of the JSON API is not protected by TUF,
+  and so should not be used for dependency resolution.
+* Deprecating XMLRPC API: The PEP lays out the foundation for the future deprecation of the XMLRPC API.
 
 Specification
 =============
 
-The JSON API is a HTTP GET based API. HTTP responses must be sent with the following content type:
+The JSON API is a HTTP GET based API.
 
-::
+
+Response Headers
+----------------
+
+HTTP responses must be sent with the following content type:
+
+.. code-block::
 
    content-type: application/json
 
-It is guaranteed to always have **only** strings as top-level key values.
+The response must also contain a ``X-PyPI-Last-Serial`` header with an integer
+indicating the most recent serial ID number for the project. See Response
+specification ``last_serial`` property below for more details:
 
-The response must also contain a ``X-PyPI-Last-Serial`` header with an integer indicating
-the most recent serial ID number for the project. See Response specification ``last_serial`` field below
-for more details.
+.. code-block::
+
+   x-pypi-last-serial: 10266075
 
 Versioning
 ----------
 
-The JSON API will use Semantic Versioning [3]_. This PEP defines version **1.0.0**.
+The JSON API will use Semantic Versioning [3]_. This PEP defines version
+**1.0.0**.
 
 
 API URLs
 --------
 
-All URLs are described relative to a ``$root``. This is required to allow devpi like servers
-to host multiple indexes. In case of PyPI the ``$root`` is pypi.org.
+All URLs are described relative to a ``$root``. This is required to allow devpi
+like servers to host multiple indexes. In case of PyPI the ``$root`` is
+pypi.org.
 
 * ``$root/api/v1/project/$project_name/latest``
 * ``$root/api/v1/project/$project_name/$version``
 
-Legacy JSON API migration
+Legacy endpoints migration
 --------------------------
 
-The legacy JSON API can be easily migrated without other code changes by replacing
-the URL structure as described below:
+The legacy JSON API can be easily migrated without other code changes by
+replacing the URL structure as described below:
 
-* ``$root/pypi/$project_name/json`` -> ``$root/api/v1/project/$project_name/latest``
-* ``$root/pypi/$project_name/$version/json`` -> ``$root/api/v1/project/$project_name/$version``
+* ``$root/pypi/$project_name/json`` ->
+  ``$root/api/v1/project/$project_name/latest``
+* ``$root/pypi/$project_name/$version/json`` ->
+  ``$root/api/v1/project/$project_name/$version``
 
-Response JSON Schema
---------------------------
+Response Specification
+-----------------------
 
-Using the JSON Schema draft standard [1]_ here are the expected returned metadata fields from the
-JSON API. The complete JSON has been broken down by top-level key values.
+A ``json_api.schema.json`` JSON Schema file can be found `here
+<pep-9999/json_api.schema.json>`_.
 
-Some of the fields ar marked as "[DEPRECATED]" which means they field should be present,
-but the contents of the field should not be populated or relied on by the users.
+Some of the properties are marked as "[DEPRECATED]" which means they should be
+present, but the contents of the properties should not be populated or relied on
+by the users.
 
-**JSON Top Level Keys**
+There are four main top level keys:
 
 .. code-block::
 
-  {
-    "info": {},
-    "last_serial": 0,
-    "releases": {},
-    "urls": {}
-  }
+   {
+      "info": {...},
+      "last_serial": {...},
+      "releases": {...},
+      "urls": {...}
+   }
 
 **info**
 
-This key contains a JSON object with generic information about the requested version of the project.
-Many of these fields are generated from https://packaging.python.org/specifications/core-metadata/.
+This key contains a JSON object with generic information about the requested
+version of the project. Many of the properties are generated from
+https://packaging.python.org/specifications/core-metadata/.
+
+A minimal response containing only the required properties may look like this:
 
 .. code-block::
 
-  {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://example.com/product.schema.json",
-    "title": "JSON API project info",
-    "description": "Generic information pulled from Python Package configuration",
-    "type": "object",
-    "required": [
-      "author",
-      "author_email",
-      "license",
-      "name",
-      "project_url",
-      "version",
-    ]
-    "properties": {
-      "author": {
-         "description": "The name of the company or individual who created the project",
-         "type": "string"
-      },
-      "author_email": {
-         "description": "The author's email address",
-         "type": "string"
-      },
-      "bugtrack_url": {
-         "description": "URL to find issues and bugs for the project.
-         "type": "string"
-      },
-      "classifiers": {
-         "description": "Trove Classifier. Corresponds to https://packaging.python.org/specifications/core-metadata/#classifier-multiple-use",
-         "type": "sequence"
-      },
-      "description": {
-         "description": "Corresponds to https://packaging.python.org/specifications/core-metadata/#description",
-         "type": "string"
-      },
-      "description_content_type": {
-         "description": "Corresponds to https://packaging.python.org/specifications/core-metadata/#description-content-type",
-         "type": "string"
-      },
-      "docs_url": {
-         "description": "URL to the project's documentation",
-         "type": "string"
-      },
-      "download_url": {
-         "description": "[DEPRECATED]",
-         "type": "string"
-      },
-      "downloads": {
-         "description": "[DEPRECATED]",
-         "type": "object"
-      },
-      "home_page": {
-         "description": "URL to project home page",
-         "type": "string"
-      },
-      "keywords": {
-         "description": "Keywords to use for project searching",
-         "type": "string"
-      },
-      "license": {
-         "description": "Project's open source license",
-         "type": "string"
-      },
-      "maintainer": {
-         "description": "Project maintainer name",
-         "type": "string"
-      },
-      "maintainer_email": {
-         "description": "Project maintainer email address",
-         "type": "string"
-      },
-      "name": {
-         "description": "Project's raw (non-normailzed name)",
-         "type": "string"
-      },
-      "package_url": {
-         "description": "URL to the PyPI project page",
-         "type": "string"
-      },
-      "platform": {
-         "description": "[DEPRECATED]",
-         "type": "string"
-      },
-      "project_url": {
-         "description": "URL to the PyPI project page",
-         "type": "string"
-      },
-      "project_urls": {
-         "description": "Additional URLs that are relevant to your project. Corresponds to https://packaging.python.org/specifications/core-metadata/#project-url-multiple-use",
-         "type": "object"
-      },
-      "release_url": {
-         "description": "Web URL of the version of the project",
-         "type": "string"
-      },
-      "requires_dist": {
-         "description": "Metadata calculated project dependencies. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use",
-         "type": "string"
-      },
-      "requires_python": {
-         "description": "Python runtime version required for project. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python",
-         "type": "string"
-      },
-      "summary": {
-         "description": "A one-line summary of what the distribution does.. Corresponds to https://packaging.python.org/specifications/core-metadata/#summary",
-         "type": "string"
-      },
-      "version": {
-         "description": "A string containing the distribution’s version number in the format specified in PEP 440. Corresponds to https://packaging.python.org/specifications/core-metadata/#version",
-         "type": "string"
-      },
-      "yanked": {
-         "description": "If the latest version has been yanked. As defined in PEP 592",
-         "type": "boolean"
-      },
-      "yanked_reason": {
-         "description": "Reason for applying PEP 592 version yank",
-         "type": "string"
-      },
-    },
-  }
+   {
+      author: "A. Random Developer",
+      author_email: "author@example.com",
+      license: "MIT",
+      name: "sampleproject",
+      project_url: "https://pypi.org/project/sampleproject/",
+      version: "2.0.0",
+      yanked: false,
+      yanked_reason: null
+   }
 
 **last_serial**
 
-.. code-block::
+The serial is a monotonically increasing integer sequence available for each
+project that changes every time the project is updated.
 
-  {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://example.com/product.schema.json",
-    "title": "last_serial",
-    "description": "Internal PyPI serial indicating last modification",
-    "type": "int"
-  }
+**releases** and **urls**
 
-**releases**, **urls**
+The two properties have similar structure. However while ``releases`` include
+all available release files across all released versions of the project, the
+``urls`` property only provides information about the requested version of the
+project. Consequently the content of the ``urls`` property is always available
+as one of the versions in the ``releases`` property.
 
-The two fields have similar structure. However while ``releases`` include all available release files across all released versions
-of the project, the ``urls`` field only provides information about the requested version of the project.
-Consequently the content of the ``urls`` field is always available as one of the versions in the ``releases`` field.
-
-For example, if ``$root/api/v1/project/$project_name/1.0.0`` was requested the content of ``urls`` field will be
-identical to ``releases["1.0.0"]``.
+For example, if ``$root/api/v1/project/$project_name/1.0.0`` was requested, the
+content of ``urls`` property in the example below will be identical to
+``releases["1.0.0"]``.
 
 .. code-block::
 
   "releases": {
     "0.1.0": [],
-    "0.2.0": [{...}, {...}]
+    "0.2.0": [{...}, {...}],
     "1.0.0": [{...}, {...}, ...]
-  }
+  },
   "urls": [{...}, {...}, ...]
 
-Each released file falls under a sequence of release files under the release version key string.
-
-The list of released files can be empty for some version of the project.
+The list of released files can be empty for some versions of the project. Each
+``{...}`` represents a release file.
 
 **release file**
 
+A downloadable and installable artifact, always associated with a particular
+version of the project.
+
+A minimal example containing only the required properties may look like this:
+
 .. code-block::
 
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://example.com/product.schema.json",
-    "title": "JSON API project release files",
-    "description": "Per release (each version)",
-    "type": "object",
-    "required": [
-      "digests", 
-      "filename",
-      "pacakgetype",
-      "python_version",
-      "size",
-      "upload_time",
-      "upload_time_iso_8601",
-      "url",
-      "yanked",
-      "yanked_reason",
-    ]
-    "properties": {
-      "comment_text": {
-         "description": "Misc package metadata",
-         "type": "string"
+   {
+      filename: "sampleproject-2.0.0-py3-none-any.whl",
+      url: "https://files.pythonhosted.org/packages/b8/f7/dd9223b39f683690c30f759c876df0944815e47b588cb517e4b9e652bcf7/sampleproject-2.0.0-py3-none-any.whl",
+      digests: {
+         md5: "34b3750e8a39e7c2930cac64cd44ca0a",
+         sha256: "2b0c55537193b792098977fdb62f0acbaeb2c3cfc56d0e24ccab775201462e04"
       },
-      "digests": {
-         "description": "The file checksums",
-         "type": "object"
-         "properties": {
-            "md5": {
-               "description": "The MD5 checksum of the release file",
-               "type": "string"
-            },
-            "sha256": {
-               "description": "The SHA256 checksum of the release file",
-               "type": "string"
-            }
-         }
-      },
-      "downloads": {
-         "description": "[DEPRECATED]",
-         "type": "int"
-      },
-      "filename": {
-         "description": "Release full filename (including extension)",
-         "type": "string"
-      },
-      "has_sig": {
-         "description": "A $filename.asc GPG signature file is available",
-         "type": "boolean"
-      },
-      "md5_digest": {
-         "description": "[DEPRECATED]",
-         "type": "string"
-      },
-      "packagetype": {
-         "description": "Release file type: sdist or bdist_wheel",
-         "type": "string"
-      },
-      "python_version": {
-         "description": "Can be 'source' or Python Tag as defined in https://www.python.org/dev/peps/pep-0425/#python-tag",
-         "type": "string"
-      },
-      "requires_python": {
-         "description": "The Python version(s) that the distribution is guaranteed to be compatible with. Corresponds to https://packaging.python.org/specifications/core-metadata/#requires-python",
-         "type": "string"
-      },
-      "size": {
-         "description": "File size in bytes",
-         "type": "int"
-      },
-      "upload_time": {
-         "description": "strftime('%Y-%m-%dT%H:%M:%S') of when release file was uploaded",
-         "type": "string"
-      },
-      "upload_time_iso_8601": {
-         "description": "ISO 8601 timestamp of when release file was uploaded",
-         "type": "string"
-      },
-      "url": {
-         "description": "URL to use to download release file",
-         "type": "string"
-      },
-      "yanked": {
-         "description": "Is release file PEP 592 yanked",
-         "type": "boolean"
-      },
-      "yanked_reason": {
-         "description": "PEP 592 reason for yanking release file",
-         "type": "string"
-      }
-    },
-  }
+      packagetype: "bdist_wheel",
+      size: 4209,
+      upload_time: "2020-06-25T19:09:43",
+      upload_time_iso_8601: "2020-06-25T19:09:43.103653Z",
+      yanked: false,
+      yanked_reason: null
+   },
 
 Dealing with errors
 -------------------
 
-Client errors are all handled via HTTP response codes. The following is returned:
+Client errors are all handled via HTTP response codes. The following is
+returned:
 
-* 301: When a JSON URL has a trailing / the server should redirect to
-  a URL removing the tailing / removed
+* 301: When a JSON URL has a trailing "/" the server should redirect to
+  a URL removing the tailing "/" removed
 * 404: When a projects does not exist
 * 500: When an internal code logic or database error occurs
 
@@ -396,7 +229,7 @@ Client errors are all handled via HTTP response codes. The following is returned
 Capitalization, case-sensitivity, and normalization
 ---------------------------------------------------
 
-The JSON API normalizes package names as per PEP 503 [2]_.
+The JSON API normalizes project names as per PEP 503 [2]_.
 
 References
 ==========
@@ -416,7 +249,6 @@ Copyright
 =========
 
 This document has been placed in the public domain.
-
 
 ..
    Local Variables:
