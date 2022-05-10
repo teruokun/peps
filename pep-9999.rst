@@ -1,0 +1,124 @@
+PEP: <REQUIRED: pep number>
+Title: Optional Software Bill of Materials (SBOMs) in Wheels
+Author: Jeff Edwards
+Sponsor: Dustin Ingram
+PEP-Delegate: <PEP delegate's real name>
+Discussions-To:
+Status: Draft
+Type: <REQUIRED: Standards Track | Informational | Process>
+Content-Type: text/x-rst
+Created: 03-05-2022
+Post-History: <REQUIRED: dates, in dd-mmm-yyyy format, and corresponding links to PEP discussion threads>
+
+
+Abstract
+========
+
+This is a specification for the method for optional inclusion of one or more Software Bill of Materials (SBOMs) into the metadata of wheel distributions to offer more thorough provenance tracking which notably would allow for attestations about the source used to build the artifacts.
+
+
+Motivation
+==========
+
+One of the many hurdles towards building a more secure software supply chain is a lack of standardized metadata about the sources used to both build and test an installable artifact.  This is especially problematic for wheels including but not limited to:
+
+* Packages that build binary extensions (e.g. C/Rust extensions)
+
+* Packages that vendor packages from outside the Python ecosystem (e.g. Numpy -> libgfortran, cryptography -> openssl/Rust packages)
+
+* Packages that vendor other python packages for stability, portability, and/or reproducability (e.g. setuptools -> packaging)
+
+In all of these cases, while wheels already includes a manifest and checksums of the installable artifacts, it does not have a representation of the authoritative sources for those artifacts, losing any authoritative context around vendored python packages and completely obfuscating the sources used for native binaries.  This lack of standardized transparency becomes clear once a risk or vulnerability is found for a vendored dependency, where the lack of transparancy makes it difficult if not impossible to know if your software is transitively vulnerable as a result.
+
+A Software Bill of Materials (SBOM) describes a type of metadata format to record these missing annotations in order to bridge this gap.  The goals of this PEP are:
+
+1. To codify where and how SBOMs should be included within a Wheel to ensure a consistent lookup for consumers
+
+2. To define a location and default SBOM format -- SPDX 2, json format -- to centralize ecosystem efforts around generating, ingesting, and verifying a package's SBOM within the ecosystem.
+
+
+Rationale
+=========
+
+Why is this limited to wheels?
+------------------------------
+
+Wheels are the current maintained pre-compiled artifact standard where all dependencies are either left to the installer of the wheel to download and install (in which case those packages would be responsible for their own SBOM) or are already vendored within the wheel itself.  Source distributions are specifically not included since they may use an arbitrary build system and build script which can download, install, and subsequently vendor artifacts from other packages, so any SBOM included could not be reliably complete without additional measures.
+
+Why support multiple SBOM specifications?
+-----------------------------------------
+
+Specifications for this type of metadata may be super-ceded in the future and specific industries may have restrictions or requirements where our choice may not fully cover their requirements or existing SBOM infrastructure.  Giving an extensible way to include SBOMs allows for both internal and external repositories to cater to those specific needs without customized logic and for changes to the intended default to not hard-require the ecosystem to migrate simultaneously.
+
+Why should we choose a default?
+-------------------------------
+
+“There should be one -- and preferably only one --obvious way to do it” applies to this space in that unifying expectations around generation, consumption, and verification of the relevant SBOM help limit the initial scope of the necessary support and tools written to fill these needs.  This focuses the effort around a single target and accelerates development while establishing a common practice.
+
+Why SPDX 2?
+-----------
+
+Many factors were considered when choosing the spec including its status in the open source community, governance, breadth of supported use-cases, established history of maintainability, and these same factors for any specifications it includes by default.  SPDX 2 had the largest set of features and annotations with a clear specification with a long history as well as existing tooling.
+
+Why JSON?
+---------
+
+It has a performant standard-library implementation and remains an standard of near-universal interoperability between languages.
+
+Specification
+=============
+
+This adds an optional ``sboms`` directory into the existing ``<package_identifier>.dist-info`` subdirectory within the wheel where SBOMS can be found generically, with the current common standard location defined for `SPDX version 2.* - JSON format <https://spdx.github.io/spdx-spec/>` located at ``spdx-2.json``.  Example destination:
+
+``myproject-0.1.0.dist-info/sboms/spdx-2.json``
+
+
+Backwards Compatibility
+=======================
+
+SBOM metadata is an optional component and therefore may be omitted.  Any hard requirement on including an SBOM or a specific SBOM type in a wheel is left to repository owners to enforce and manage.
+
+
+Security Implications
+=====================
+
+If an SBOM intentionally is added that intentionally take significantly longer to read or verify, it could impact any consumers who are verifying SBOMs on ingestion.  Similarly, if PyPI ever moves to verifying the SBOM of a wheel (whether sychronously or asynchronously), that process could also similarly be vulnerable depending on the parsing and validation logic.  However, given this is fully optional, these risks aren't substantively greater than the addition of other types of parsable metadata.
+
+
+How to Teach This
+=================
+
+[How to teach users, new and experienced, how to apply the PEP to their work.]
+
+
+Reference Implementation
+========================
+
+[Link to any existing implementation and details about its state, e.g. proof-of-concept.]
+
+
+Rejected Ideas
+==============
+
+Separated metadata specifier ``sboms/_index_.json``
+---------------------------------------------------
+This is the most reasonable alternate implementation, but it does require any readers and writers to understand a separate metadata file format and defining and maintaining a necessary expected field list for those records instead of relying upon official standardized locations.  In the interest of simplicity, this chooses to standardize the expected locations instead of having metadata about metadata.
+
+
+Open Issues
+===========
+
+[Any points that are still being decided/discussed.]
+
+
+Footnotes
+=========
+
+[A collection of footnotes cited in the PEP, and a place to list non-inline hyperlink targets.]
+
+
+Copyright
+=========
+
+This document is placed in the public domain or under the
+CC0-1.0-Universal license, whichever is more permissive.
