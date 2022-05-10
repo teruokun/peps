@@ -143,7 +143,28 @@ of other types of parse-able metadata.
 How to Teach This
 =================
 
-[How to teach users, new and experienced, how to apply the PEP to their work.]
+While the metadata for a wheel can specify which *external* dependencies
+should be installed alongside the wheel in order for it to function properly,
+it contains no information about the source of the software contained *within*
+the wheel. In the simplest case, the software in the wheel directly corresponds
+to source in a public source repository.
+
+Unfortunately, this is a simplistic representation of what a wheel may actually
+contain. The usefulness of the wheel format derives from it's ability to
+provide 'built' platform-native code alongside Python code, but it provides no
+mechanism for identifying what that code is, where it came from, or what it was
+'built' with.
+
+Additionally, a project may choose to include sub-dependencies directly in it's
+source (known as vendoring) rather than specify them to be installed alongside
+the wheel at install-time. This means that these dependencies are only
+available to the software within the wheel, but also that there is nothing
+intrinsic about the wheel, it's metadata, or it's build process that describes
+where this software came from.
+
+Using SBOMs provides a means for recording the source of these types of
+external dependencies often included in wheels. Including an SBOM in a wheel
+allows this record to live alongside the software it describes.
 
 
 Reference Implementation
