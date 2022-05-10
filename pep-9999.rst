@@ -75,6 +75,22 @@ so any SBOM included could not be reliably complete without additional
 measures.
 
 
+Why does the SBOM not include external dependencies?
+----------------------------------------------------
+
+Because wheels are used to distribute libraries, not applications, their
+external dependencies (e.g. dependencies on other Python projects that would be
+installed alongside the wheel at install time) are loosely specified. Due to
+this, the actual artifacts installed at install time may vary based on a number
+of factors, including but not limited to the Python version in use, the
+platform, CPU architecture, the availability of the external artifacts, and
+more.
+
+An SBOM, however, represents a strict set of software that is guaranteed to be
+included in the artifact, and thus will be present in the environment which the
+wheel is installed into.
+
+
 Why support multiple SBOM specifications?
 -----------------------------------------
 
