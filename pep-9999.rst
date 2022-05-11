@@ -1,6 +1,7 @@
 PEP: 9999
 Title: Including Software Bill of Materials in Wheels
-Author: Jeff Edwards <jeffe@amazon.com>, Dustin Ingram <di@python.org>
+Author: Jeff Edwards <jeffe@amazon.com>,
+        Dustin Ingram <di@python.org>
 Sponsor: Brett Cannon <brett at python.org>
 PEP-Delegate: TBD
 Discussions-To: TBD
